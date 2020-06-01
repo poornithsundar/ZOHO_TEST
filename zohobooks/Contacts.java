@@ -16,13 +16,14 @@ import org.json.simple.parser.ParseException;
 public class Contacts 
 {
 	static TokenConfig g = new TokenConfig();
+	
 	static Scanner sc = new Scanner(System.in);
 	
 	public static void get_contact(long contact_id) throws IOException, ParseException
 	{
-		String inputLine = "Zoho-oauthtoken "+g.getAccess();
+		String inputLine = g.getInputLine();
 		StringBuffer content = new StringBuffer();
-		URL url = new URL("https://books.zoho.com/api/v3/contacts/"+contact_id+"?organization_id="+g.organisation_id);
+		URL url = new URL("https://books.zoho.com/api/v3/contacts/"+contact_id+"?organization_id="+g.getOrganisation_id());
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -51,6 +52,7 @@ public class Contacts
 	@SuppressWarnings("unchecked")
 	public static void create_contact() throws Exception
 	{
+		String inputLine = g.getInputLine();
 		System.out.print("Enter contact name:");
 		String name = sc.nextLine();
 		System.out.print("Enter company name:");
@@ -132,8 +134,7 @@ public class Contacts
 		jsonObject.put("shipping_address", s);
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
-		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.organisation_id);
-		String inputLine = "Zoho-oauthtoken "+g.getAccess();
+		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.getOrganisation_id());
 		HttpURLConnection request = (HttpURLConnection) url.openConnection();
 		request.setRequestProperty("Authorization", inputLine);
 		request.setRequestProperty("Accept", "application/json");
@@ -155,11 +156,12 @@ public class Contacts
 		}
 		dos.writeBytes(requestParams.toString());	
 		dos.close();
-		if(request.getResponseCode()==201)
+		int status = request.getResponseCode();
+		if(status==201)
 		{
 			System.out.println("Contact Created Successfully....!");
 		}
-		else if(request.getResponseCode()==401)
+		else if(status==401)
 		{
 			System.out.println("Generate a new Access Token........!");
 		}
@@ -172,9 +174,10 @@ public class Contacts
 	
 	public static void list_contacts() throws IOException, ParseException
 	{
-		String inputLine = "Zoho-oauthtoken "+g.getAccess();
+		String inputLine = g.getInputLine();
+		System.out.println(inputLine);
 		StringBuffer content = new StringBuffer();
-		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.organisation_id);
+		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.getOrganisation_id());
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -211,7 +214,7 @@ public class Contacts
 	{
 		String inputLine;
 		StringBuffer content = new StringBuffer();
-		URL url = new URL("https://accounts.zoho.com/oauth/v2/token?refresh_token="+g.refresh_token+"&redirect_uri=http://www.zoho.com/books&grant_type=refresh_token");
+		URL url = new URL("https://accounts.zoho.com/oauth/v2/token?refresh_token="+g.getRefresh_token()+"&client_id="+g.getClient_id()+"&client_secret="+g.getClient_secret()+"&redirect_uri=http://www.zoho.com/books&grant_type=refresh_token");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("POST");
 		int status = con.getResponseCode();
@@ -235,8 +238,8 @@ public class Contacts
 	
 	public static void delete_contact(long contact_id) throws IOException
 	{
-		String inputLine = "Zoho-oauthtoken "+g.getAccess();
-		URL url = new URL("https://books.zoho.com/api/v3/contacts/"+contact_id+"?organization_id="+g.organisation_id);
+		String inputLine = g.getInputLine();
+		URL url = new URL("https://books.zoho.com/api/v3/contacts/"+contact_id+"?organization_id="+g.getOrganisation_id());
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -264,7 +267,7 @@ public class Contacts
 		String l="0";
 		String inputLine = "Zoho-oauthtoken "+g.getAccess();
 		StringBuffer content = new StringBuffer();
-		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.organisation_id);
+		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+g.getOrganisation_id());
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -321,7 +324,7 @@ public class Contacts
 				case 4:	System.out.println("Enter Contact Name:");
 						String name = sc.nextLine();
 						String id = find(name);
-						if(id!="0" && id!="-1")
+						if(!(id.equals("0")) && !(id.equals("-1")))
 						{
 							delete_contact(Long.parseLong(id));
 						}
