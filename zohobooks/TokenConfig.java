@@ -11,7 +11,7 @@ public class TokenConfig {
 	private String refresh_token="1000.9c5071b7704ae16a276ab12c2f5a62ed.57eedc3f27a0ecfb83e3c517d4db9468";
 	private String client_id="1000.F20ZMG4L3Q9C98HOJ6YQMRZRGJMPEH";
 	private String client_secret="ecc5867a4567f9db106278678e551cbeb23f503fd5";
-	private String organisation_id = "715673375";
+	private String base_url = "https://books.zoho.com/api/v3";
 	public void setAccess(String access_token)
 	{
 		this.access_token = access_token;
@@ -55,10 +55,10 @@ public class TokenConfig {
 	public void setClient_secret(String client_secret) {
 		this.client_secret = client_secret;
 	}
-	public String getOrganisation_id() {
-		return organisation_id;
+	public String getBase_url() {
+		return base_url;
 	}
-	public void setOrganisation_id(String organisation_id) {
-		this.organisation_id = organisation_id;
+	public void setBase_url(String base_url) {
+		this.base_url = base_url;
 	}
 }
