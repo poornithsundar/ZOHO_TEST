@@ -17,13 +17,14 @@ public class Contacts
 {
 	static TokenConfig g = new TokenConfig();
 	static String organisation_id = "715673375";
+	static String base_url = "https://books.zoho.com/api/v3";
 	static Scanner sc = new Scanner(System.in);
 	
 	public static void get_contact(long contact_id) throws IOException, ParseException
 	{
 		String inputLine = g.getInputLine();
 		StringBuffer content = new StringBuffer();
-		URL url = new URL(g.getBase_url()+"/contacts/"+contact_id+"?organization_id="+organisation_id);
+		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -134,7 +135,7 @@ public class Contacts
 		jsonObject.put("shipping_address", s);
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
-		URL url = new URL(g.getBase_url()+"/contacts?organization_id="+organisation_id);
+		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
 		HttpURLConnection request = (HttpURLConnection) url.openConnection();
 		request.setRequestProperty("Authorization", inputLine);
 		request.setRequestProperty("Accept", "application/json");
@@ -177,7 +178,7 @@ public class Contacts
 		String inputLine = g.getInputLine();
 		System.out.println(inputLine);
 		StringBuffer content = new StringBuffer();
-		URL url = new URL(g.getBase_url()+"/contacts?organization_id="+organisation_id);
+		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("GET");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -239,7 +240,7 @@ public class Contacts
 	public static void delete_contact(long contact_id) throws IOException
 	{
 		String inputLine = g.getInputLine();
-		URL url = new URL(g.getBase_url()+"/contacts/"+contact_id+"?organization_id="+organisation_id);
+		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty ("Authorization", inputLine);
@@ -328,7 +329,7 @@ public class Contacts
 						{
 							delete_contact(Long.parseLong(id));
 						}
-						else if(id=="0")
+						else if(id.equals("0"))
 						{
 							System.out.println("Wrong Contact Name");
 						}
@@ -336,11 +337,11 @@ public class Contacts
 				case 5: System.out.println("Enter Contact Name:");
 						String nm = sc.nextLine();
 						String i = find(nm);
-						if(i!="0" && i!="-1")
+						if(!(i.equals("0")) && !(i.equals("-1")))
 						{
 							get_contact(Long.parseLong(i));
 						}
-						else if(i=="0")
+						else if(i.equals("0"))
 						{
 							System.out.println("Wrong Contact Name");
 						}
