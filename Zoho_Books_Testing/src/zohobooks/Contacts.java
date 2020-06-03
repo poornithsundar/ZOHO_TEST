@@ -176,7 +176,7 @@ public class Contacts
 		}
 	}
 	
-	public static void list_contacts() throws IOException, ParseException
+	public static void list_contacts() throws IOException, ParseException, InterruptedException
 	{
 		String inputLine = g.getInputLine();
 		System.out.println(inputLine);
@@ -209,7 +209,9 @@ public class Contacts
 		}
 		else
 		{
-			System.out.println("Please generate a Access Token........");
+			System.out.println("Access Token Expired........! Refreshing token......!");
+			gen_access_token();
+			list_contacts();
 		}
 		con.disconnect();
 	}
@@ -240,7 +242,7 @@ public class Contacts
         System.out.println("Access Token Replaced Successfully........");
 	}
 	
-	public static void delete_contact(long contact_id) throws IOException
+	public static void delete_contact(long contact_id) throws IOException, InterruptedException, ParseException
 	{
 		String inputLine = g.getInputLine();
 		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
@@ -258,7 +260,9 @@ public class Contacts
 		}
 		else if(response==401)
 		{
-			System.out.println("Please Generate a Access Token.......");
+			System.out.println("Access Token Expired........! Refreshing token......!");
+			gen_access_token();
+			delete_contact(contact_id);
 		}
 		else
 		{
@@ -266,7 +270,7 @@ public class Contacts
 		}
 	}
 	
-	public static String find(String name) throws IOException, ParseException
+	public static String find(String name) throws IOException, ParseException, InterruptedException
 	{
 		String l="0";
 		String inputLine = "Zoho-oauthtoken "+g.getAccess();
@@ -303,9 +307,9 @@ public class Contacts
 		}
 		else
 		{
-			System.out.println("Please generate a Access Token........");
-			con.disconnect();
-			return "-1";
+			System.out.println("Access Token Expired........! Refreshing token......!");
+			gen_access_token();
+			return find(name);
 		}
 	}
 	
@@ -314,7 +318,7 @@ public class Contacts
 		int opt = 0;
 		do
 		{
-			System.out.println("ZOHO BOOKS API TEST");
+			System.out.println("CONTACTS API TEST");
 			System.out.println("Select any one:\n1.Generate Access Token\n2.Create a Contact\n3.Display List of Contacts\n4.Delete a Contact Using Contact Name\n5.Get Contact Details by Name\n6.Exit\nEnter your Choice:");
 			opt = Integer.parseInt(sc.nextLine());
 			switch(opt)
@@ -353,7 +357,6 @@ public class Contacts
 						 break;
 			}
 		}while(opt!=6);
-		sc.close();
     }
 
 }
