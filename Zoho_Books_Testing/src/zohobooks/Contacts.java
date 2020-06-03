@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 
@@ -17,15 +16,16 @@ public class Contacts
 	static String base_url = "https://books.zoho.com/api/v3";
 	static Scanner sc = new Scanner(System.in);
 	
-	public static void get_contact(long contact_id) throws Exception
+	public static void getContact() throws Exception
 	{
-		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
-		JSONObject obj = ApiMethods.get(url, g);
-	    System.out.println(g.toPrettyFormat(obj.toString()));
+		System.out.println("Enter Item Id:");
+		long id = Long.parseLong(sc.nextLine());
+		URL url = new URL(base_url+"/contacts/"+id+"?organization_id="+organisation_id);
+		ApiMethods.get(url, g);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void create_contact() throws Exception
+	public static void createContact() throws Exception
 	{
 		System.out.print("Enter contact name:");
 		String name = sc.nextLine();
@@ -109,105 +109,40 @@ public class Contacts
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
 		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
-		int status = ApiMethods.post(url,requestBody,g);
-		if(status==201)
-		{
-			System.out.println("Contact Created Successfully....!");
-		}
-		else
-		{
-			System.out.println("Error in input given....!");
-		}
+		ApiMethods.post(url,requestBody,g);
 	}
 	
-	public static void list_contacts() throws Exception
+	public static void listContacts() throws Exception
 	{
 		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
-		JSONObject obj = ApiMethods.get(url,g);
-        System.out.println(obj);
-        JSONArray ja = (JSONArray)obj.get("contacts");
-        for(int i=0;i<ja.size();i++)
-        {
-        	JSONObject objects = (JSONObject)ja.get(i);
-        	String a = objects.toString();
-        	System.out.println(g.toPrettyFormat(a));
-        }
+		ApiMethods.get_all(url,g,"contacts");
 	}
 	
-	public static void delete_contact(long contact_id) throws Exception
+	public static void deleteContact() throws Exception
 	{
-		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
-		int response = ApiMethods.delete(url, g);
-		if(response==200)
-		{
-			System.out.println("Contact Deleted Successfully........");
-		}
-		else if(response==404)
-		{
-			System.out.println("Enter Correct Contact Id....");
-		}
-		else
-		{
-			System.out.println("Contact cannot be deleted.....");
-		}
+		System.out.println("Enter Item Id:");
+		long id = Long.parseLong(sc.nextLine());
+		URL url = new URL(base_url+"/contacts/"+id+"?organization_id="+organisation_id);
+		ApiMethods.delete(url, g);
 	}
 	
-	public static String find(String name) throws Exception
-	{
-		String l="0";
-		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+organisation_id);
-		JSONObject obj = ApiMethods.get(url, g);
-        JSONArray ja = (JSONArray)obj.get("contacts");
-        for(int i=0;i<ja.size();i++)
-        {
-        	JSONObject objects = (JSONObject)ja.get(i);
-        	if(((String) objects.get("contact_name")).equalsIgnoreCase(name))
-        	{
-        		l = (String) objects.get("contact_id");
-        	}
-        }
-        return l;
-	}
-	
-	public static void main(String[] args) throws Exception
+	public Contacts() throws Exception
 	{
 		int opt = 0;
 		do
 		{
 			System.out.println("CONTACTS API TEST");
-			System.out.println("Select any one:\n1.Generate Access Token\n2.Create a Contact\n3.Display List of Contacts\n4.Delete a Contact Using Contact Name\n5.Get Contact Details by Name\n6.Exit\nEnter your Choice:");
+			System.out.println("Select any one:\n2.Create a Contact\n3.Display List of Contacts\n4.Delete a Contact\n5.Get Contact Details\n6.Exit\nEnter your Choice:");
 			opt = Integer.parseInt(sc.nextLine());
 			switch(opt)
 			{
-				case 1:	ApiMethods.gen_access_token(g);
+				case 2: createContact();
 						break;
-				case 2: create_contact();
+				case 3: listContacts();
 						break;
-				case 3: list_contacts();
+				case 4:	deleteContact();
 						break;
-				case 4:	System.out.println("Enter Contact Name:");
-						String name = sc.nextLine();
-						String id = find(name);
-						if(!(id.equals("0")) && !(id.equals("-1")))
-						{
-							delete_contact(Long.parseLong(id));
-						}
-						else if(id.equals("0"))
-						{
-							System.out.println("Wrong Contact Name");
-						}
-						break;
-				case 5: System.out.println("Enter Contact Name:");
-						String nm = sc.nextLine();
-						String i = find(nm);
-						if(!(i.equals("0")) && !(i.equals("-1")))
-						{
-							get_contact(Long.parseLong(i));
-						}
-						else if(i.equals("0"))
-						{
-							System.out.println("Wrong Contact Name");
-						}
+				case 5: getContact();
 						break;
 				default: System.out.println("Thank You.........!");
 						 break;

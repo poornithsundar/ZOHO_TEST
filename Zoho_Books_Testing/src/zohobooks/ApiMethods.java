@@ -10,6 +10,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -43,7 +44,7 @@ public class ApiMethods
         System.out.println("Access Token Replaced Successfully........");
 	}
 	
-	public static int post(URL url,HashMap<String, Object> requestBody,TokenConfig g) throws Exception
+	public static void post(URL url,HashMap<String, Object> requestBody,TokenConfig g) throws Exception
 	{
 		String inputLine = g.getInputLine();
 		HttpURLConnection request = (HttpURLConnection) url.openConnection();
@@ -68,38 +69,70 @@ public class ApiMethods
 		dos.writeBytes(requestParams.toString());	
 		dos.close();
 		int status = request.getResponseCode();
-		if(status==401)
+		if(status==201)
+		{
+			System.out.println("Created Successfully....!");
+		}
+		else if(status==401)
 		{
 			System.out.println("Access Token Expired........! Refreshing token......!");
 			gen_access_token(g);
-			return(post(url,requestBody,g));
+			post(url,requestBody,g);
 		}
-		else
+		else if(status==404)
 		{
-			return(status);
+			System.out.println("Invalid Body....");
+		}
+		else if(status==403)
+		{
+			System.out.println("The user does not have enough permission or possibly not an user of the respective organization to access the resource.");
+		}
+		else if(status==405)
+		{
+			System.out.println("The requested resource does not support the HTTP method used.");
+		}
+		else if(status==429)
+		{
+			System.out.println("Too many requests within a certain time frame.");
 		}
 	}
 	
-	public static int delete(URL url,TokenConfig g) throws Exception
+	public static void delete(URL url,TokenConfig g) throws Exception
 	{
 		String inputLine = g.getInputLine();
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty ("Authorization", inputLine);
 		int response = con.getResponseCode();
-		if(response==401)
+		if(response==200)
+		{
+			System.out.println("Deleted Successfully........");
+		}
+		else if(response==404)
+		{
+			System.out.println("Invalid Id....");
+		}
+		else if(response==401)
 		{
 			System.out.println("Access Token Expired........! Refreshing token......!");
 			gen_access_token(g);
-			return(delete(url,g));
+			delete(url,g);
 		}
-		else
+		else if(response==403)
 		{
-			return response;
+			System.out.println("The user does not have enough permission or possibly not an user of the respective organization to access the resource.");
+		}
+		else if(response==405)
+		{
+			System.out.println("The requested resource does not support the HTTP method used.");
+		}
+		else if(response==429)
+		{
+			System.out.println("Too many requests within a certain time frame.");
 		}
 	}
 	
-	public static JSONObject get(URL url,TokenConfig g) throws Exception
+	public static void get(URL url,TokenConfig g) throws Exception
 	{
 		String inputLine = g.getInputLine();
 		JSONObject obj = new JSONObject();
@@ -121,13 +154,84 @@ public class ApiMethods
 			String inp = content.toString();
 			JSONParser jsonParser = new JSONParser();
 		    obj = (JSONObject)jsonParser.parse(inp);
-		    return(obj);
+		    if(obj.size()!=0)   System.out.println(g.toPrettyFormat(obj.toString()));
+		    else System.out.println("No Values");
 		}
-		else
+		else if(status==404)
+		{
+			System.out.println("Invalid Id....");
+		}
+		else if(status==401)
 		{
 			System.out.println("Access Token Expired........! Refreshing token......!");
 			gen_access_token(g);
-			return(get(url,g));
+			get(url,g);
+		}
+		else if(status==403)
+		{
+			System.out.println("The user does not have enough permission or possibly not an user of the respective organization to access the resource.");
+		}
+		else if(status==405)
+		{
+			System.out.println("The requested resource does not support the HTTP method used.");
+		}
+		else if(status==429)
+		{
+			System.out.println("Too many requests within a certain time frame.");
+		}
+	}
+
+	public static void get_all(URL url,TokenConfig g,String value) throws Exception
+	{
+		String inputLine = g.getInputLine();
+		JSONObject obj = new JSONObject();
+		StringBuffer content = new StringBuffer();
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestMethod("GET");
+		con.setRequestProperty ("Authorization", inputLine);
+		int status = con.getResponseCode();
+		if(status==200)
+		{
+			BufferedReader in = new BufferedReader(
+					  new InputStreamReader(con.getInputStream()));
+			while ((inputLine = in.readLine()) != null) 
+			{
+				content.append(inputLine);
+			}
+			in.close();
+			con.disconnect();
+			String inp = content.toString();
+			JSONParser jsonParser = new JSONParser();
+		    obj = (JSONObject)jsonParser.parse(inp);
+		    JSONArray ja = (JSONArray)obj.get(value);
+		    if(ja.size()>0)
+		    {
+		        for(int i=0;i<ja.size();i++)
+		        {
+		        	JSONObject objects = (JSONObject)ja.get(i);
+		        	String a = objects.toString();
+		        	System.out.println(g.toPrettyFormat(a));
+		        }
+		    }
+		    else System.out.println("No Values");
+		}
+		else if(status==401)
+		{
+			System.out.println("Access Token Expired........! Refreshing token......!");
+			gen_access_token(g);
+			get(url,g);
+		}
+		else if(status==403)
+		{
+			System.out.println("The user does not have enough permission or possibly not an user of the respective organization to access the resource.");
+		}
+		else if(status==405)
+		{
+			System.out.println("The requested resource does not support the HTTP method used.");
+		}
+		else if(status==429)
+		{
+			System.out.println("Too many requests within a certain time frame.");
 		}
 	}
 }

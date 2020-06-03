@@ -4,7 +4,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class Items 
@@ -14,47 +13,30 @@ public class Items
 	static String base_url = "https://books.zoho.com/api/v3";
 	static Scanner sc = new Scanner(System.in);
 	
-	public static void list_items() throws Exception
+	public static void listItems() throws Exception
 	{
 		URL url = new URL(base_url+"/items?organization_id="+organisation_id);
-		JSONObject obj = ApiMethods.get(url,g);
-        System.out.println(obj);
-        JSONArray ja = (JSONArray)obj.get("items");
-        for(int i=0;i<ja.size();i++)
-        {
-        	JSONObject objects = (JSONObject)ja.get(i);
-        	String a = objects.toString();
-        	System.out.println(g.toPrettyFormat(a));
-        }
+		ApiMethods.get_all(url,g,"items");
 	}
 
-	private static void get_item(long id) throws Exception {
+	private static void getItem() throws Exception {
 		// TODO Auto-generated method stub
+		System.out.println("Enter Item Id:");
+		long id = Long.parseLong(sc.nextLine());
 		URL url = new URL(base_url+"/items/"+id+"?organization_id="+organisation_id);
-		JSONObject obj = ApiMethods.get(url, g);
-        System.out.println(g.toPrettyFormat(obj.toString()));		
+		ApiMethods.get(url, g);
 	}
 
-	private static void delete_item(long id) throws Exception {
+	private static void deleteItem() throws Exception {
 		// TODO Auto-generated method stub
+		System.out.println("Enter Item Id:");
+		long id = Long.parseLong(sc.nextLine());
 		URL url = new URL(base_url+"/items/"+id+"?organization_id="+organisation_id);
-		int response = ApiMethods.delete(url,g);
-		if(response==200)
-		{
-			System.out.println("Item Deleted Successfully........");
-		}
-		else if(response==404)
-		{
-			System.out.println("Enter Correct Item Id....");
-		}
-		else
-		{
-			System.out.println("Item cannot be deleted.....");
-		}
+		ApiMethods.delete(url,g);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void create_item() throws Exception {
+	private static void createItem() throws Exception {
 		// TODO Auto-generated method stub
 		System.out.print("Enter item name:");
 		String name = sc.nextLine();
@@ -69,40 +51,26 @@ public class Items
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
 		URL url = new URL(base_url+"/items?organization_id="+organisation_id);
-		int status = ApiMethods.post(url,requestBody,g);
-		if(status==201)
-		{
-			System.out.println("Item Created Successfully....!");
-		}
-		else
-		{
-			System.out.println("Error in input given....!");
-		}
+		ApiMethods.post(url,requestBody,g);
 	}
 	
-	public static void main(String[] args) throws Exception
+	public Items() throws Exception
 	{
 		int opt = 0;
 		do
 		{
 			System.out.println("ITEMS API TEST");
-			System.out.println("Select any one:\n1.Generate Access Token\n2.Create a Item\n3.Display List of Items\n4.Delete a Item\n5.Get Item Details\n6.Exit\nEnter your Choice:");
+			System.out.println("Select any one:\n2.Create a Item\n3.Display List of Items\n4.Delete a Item\n5.Get Item Details\n6.Exit\nEnter your Choice:");
 			opt = Integer.parseInt(sc.nextLine());
 			switch(opt)
 			{
-				case 1:	ApiMethods.gen_access_token(g);
+				case 2: createItem();
 						break;
-				case 2: create_item();
+				case 3: listItems();
 						break;
-				case 3: list_items();
+				case 4:	deleteItem();
 						break;
-				case 4:	System.out.println("Enter Item Id:");
-						long id = Long.parseLong(sc.nextLine());
-						delete_item(id);
-						break;
-				case 5: System.out.println("Enter Item Id:");
-						String nm = sc.nextLine();
-						get_item(Long.parseLong(nm));
+				case 5: getItem();
 						break;
 				default: System.out.println("Thank You.........!");
 						 break;

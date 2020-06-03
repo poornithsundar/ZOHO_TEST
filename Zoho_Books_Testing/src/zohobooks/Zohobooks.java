@@ -12,9 +12,9 @@ public class Zohobooks {
 			opt = Integer.parseInt(sc2.nextLine());
 			switch(opt)
 			{
-				case 1: Contacts.main(new String[0]);
+				case 1: new Contacts();
 						break;
-				case 2: Items.main(new String[0]);
+				case 2: new Items();
 						break;
 				default: System.out.println("Thank You......!!");
 						 break;
