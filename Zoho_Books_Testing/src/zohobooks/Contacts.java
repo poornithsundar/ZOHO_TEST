@@ -1,16 +1,12 @@
 package zohobooks;
 
-import java.io.*;
 import zohobooks.TokenConfig;
 import java.net.*;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Scanner;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 
 public class Contacts 
@@ -21,42 +17,16 @@ public class Contacts
 	static String base_url = "https://books.zoho.com/api/v3";
 	static Scanner sc = new Scanner(System.in);
 	
-	public static void get_contact(long contact_id) throws IOException, ParseException, InterruptedException
+	public static void get_contact(long contact_id) throws Exception
 	{
-		String inputLine = g.getInputLine();
-		StringBuffer content = new StringBuffer();
 		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.setRequestProperty ("Authorization", inputLine);
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-			while ((inputLine = in.readLine()) != null) 
-			{
-				content.append(inputLine);
-			}
-			in.close();
-			String inp = content.toString();
-			JSONParser jsonParser = new JSONParser();
-		    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	        System.out.println(g.toPrettyFormat(obj.toString()));
-		}
-		else
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access_token();
-			get_contact(contact_id);
-		}
-		con.disconnect();
+		JSONObject obj = ApiMethods.get(url, g);
+	    System.out.println(g.toPrettyFormat(obj.toString()));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static void create_contact() throws Exception
 	{
-		String inputLine = g.getInputLine();
 		System.out.print("Enter contact name:");
 		String name = sc.nextLine();
 		System.out.print("Enter company name:");
@@ -139,117 +109,35 @@ public class Contacts
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
 		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
-		HttpURLConnection request = (HttpURLConnection) url.openConnection();
-		request.setRequestProperty("Authorization", inputLine);
-		request.setRequestProperty("Accept", "application/json");
-		request.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		request.setRequestMethod("POST");
-		request.setDoInput(true);
-		request.setDoOutput(true);
-		request.setRequestProperty("Accept-Charset", "UTF-8");	//No I18N
-		StringBuffer requestParams = new StringBuffer();
-		DataOutputStream dos = new DataOutputStream(request.getOutputStream());
-		Iterator<String> keyIterator = requestBody.keySet().iterator();
-		while(keyIterator.hasNext())
-		{
-			String key = keyIterator.next();
-			String value = (String)requestBody.get(key);
-			requestParams.append(URLEncoder.encode(key, "UTF-8"));
-			requestParams.append("=").append(URLEncoder.encode(value, "UTF-8"));
-			requestParams.append("&");
-		}
-		dos.writeBytes(requestParams.toString());	
-		dos.close();
-		int status = request.getResponseCode();
+		int status = ApiMethods.post(url,requestBody,g);
 		if(status==201)
 		{
 			System.out.println("Contact Created Successfully....!");
 		}
-		else if(status==401)
-		{
-			System.out.println("Generate a new Access Token........!");
-		}
-
 		else
 		{
 			System.out.println("Error in input given....!");
 		}
 	}
 	
-	public static void list_contacts() throws IOException, ParseException, InterruptedException
+	public static void list_contacts() throws Exception
 	{
-		String inputLine = g.getInputLine();
-		System.out.println(inputLine);
-		StringBuffer content = new StringBuffer();
 		URL url = new URL(base_url+"/contacts?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.setRequestProperty ("Authorization", inputLine);
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-			while ((inputLine = in.readLine()) != null) 
-			{
-				content.append(inputLine);
-			}
-			in.close();
-			String inp = content.toString();
-			JSONParser jsonParser = new JSONParser();
-		    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	        System.out.println(obj);
-	        JSONArray ja = (JSONArray)obj.get("contacts");
-	        for(int i=0;i<ja.size();i++)
-	        {
-	        	JSONObject objects = (JSONObject)ja.get(i);
-	        	String a = objects.toString();
-	        	System.out.println(g.toPrettyFormat(a));
-	        }
-		}
-		else
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access_token();
-			list_contacts();
-		}
-		con.disconnect();
+		JSONObject obj = ApiMethods.get(url,g);
+        System.out.println(obj);
+        JSONArray ja = (JSONArray)obj.get("contacts");
+        for(int i=0;i<ja.size();i++)
+        {
+        	JSONObject objects = (JSONObject)ja.get(i);
+        	String a = objects.toString();
+        	System.out.println(g.toPrettyFormat(a));
+        }
 	}
 	
-	public static void gen_access_token()  throws IOException, InterruptedException, ParseException
+	public static void delete_contact(long contact_id) throws Exception
 	{
-		String inputLine;
-		StringBuffer content = new StringBuffer();
-		URL url = new URL("https://accounts.zoho.com/oauth/v2/token?refresh_token="+g.getRefresh_token()+"&client_id="+g.getClient_id()+"&client_secret="+g.getClient_secret()+"&redirect_uri=http://www.zoho.com/books&grant_type=refresh_token");
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("POST");
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-					while ((inputLine = in.readLine()) != null) {
-					    content.append(inputLine);
-					}
-					in.close();
-		}
-		con.disconnect();
-		String inp = content.toString();
-		JSONParser jsonParser = new JSONParser();
-	    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	    System.out.println(g.toPrettyFormat(inp));
-	    g.setAccess(obj.get("access_token").toString());
-        System.out.println("Access Token Replaced Successfully........");
-	}
-	
-	public static void delete_contact(long contact_id) throws IOException, InterruptedException, ParseException
-	{
-		String inputLine = g.getInputLine();
 		URL url = new URL(base_url+"/contacts/"+contact_id+"?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("DELETE");
-		con.setRequestProperty ("Authorization", inputLine);
-		int response = con.getResponseCode();
+		int response = ApiMethods.delete(url, g);
 		if(response==200)
 		{
 			System.out.println("Contact Deleted Successfully........");
@@ -258,59 +146,27 @@ public class Contacts
 		{
 			System.out.println("Enter Correct Contact Id....");
 		}
-		else if(response==401)
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access_token();
-			delete_contact(contact_id);
-		}
 		else
 		{
 			System.out.println("Contact cannot be deleted.....");
 		}
 	}
 	
-	public static String find(String name) throws IOException, ParseException, InterruptedException
+	public static String find(String name) throws Exception
 	{
 		String l="0";
-		String inputLine = "Zoho-oauthtoken "+g.getAccess();
-		StringBuffer content = new StringBuffer();
 		URL url = new URL("https://books.zoho.com/api/v3/contacts?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.setRequestProperty ("Authorization", inputLine);
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-			while ((inputLine = in.readLine()) != null) 
-			{
-				content.append(inputLine);
-			}
-			in.close();
-			String inp = content.toString();
-			JSONParser jsonParser = new JSONParser();
-		    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	        System.out.println(obj);
-	        JSONArray ja = (JSONArray)obj.get("contacts");
-	        for(int i=0;i<ja.size();i++)
-	        {
-	        	JSONObject objects = (JSONObject)ja.get(i);
-	        	if(((String) objects.get("contact_name")).equalsIgnoreCase(name))
-	        	{
-	        		l = (String) objects.get("contact_id");
-	        	}
-	        }
-	        con.disconnect();
-	        return l;
-		}
-		else
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access_token();
-			return find(name);
-		}
+		JSONObject obj = ApiMethods.get(url, g);
+        JSONArray ja = (JSONArray)obj.get("contacts");
+        for(int i=0;i<ja.size();i++)
+        {
+        	JSONObject objects = (JSONObject)ja.get(i);
+        	if(((String) objects.get("contact_name")).equalsIgnoreCase(name))
+        	{
+        		l = (String) objects.get("contact_id");
+        	}
+        }
+        return l;
 	}
 	
 	public static void main(String[] args) throws Exception
@@ -323,7 +179,7 @@ public class Contacts
 			opt = Integer.parseInt(sc.nextLine());
 			switch(opt)
 			{
-				case 1:	gen_access_token();
+				case 1:	ApiMethods.gen_access_token(g);
 						break;
 				case 2: create_contact();
 						break;

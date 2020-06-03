@@ -1,20 +1,11 @@
 package zohobooks;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Scanner;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class Items 
 {
@@ -25,90 +16,29 @@ public class Items
 	
 	public static void list_items() throws Exception
 	{
-		TokenConfig g = new TokenConfig();
-		String inputLine = g.getInputLine();
-		StringBuffer content = new StringBuffer();
 		URL url = new URL(base_url+"/items?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.setRequestProperty ("Authorization", inputLine);
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-			while ((inputLine = in.readLine()) != null) 
-			{
-				content.append(inputLine);
-			}
-			in.close();
-			String inp = content.toString();
-			JSONParser jsonParser = new JSONParser();
-		    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	        System.out.println(obj);
-	        JSONArray ja = (JSONArray)obj.get("items");
-	        for(int i=0;i<ja.size();i++)
-	        {
-	        	JSONObject objects = (JSONObject)ja.get(i);
-	        	String a = objects.toString();
-	        	System.out.println(g.toPrettyFormat(a));
-	        }
-		}
-		else
-		{
-			System.out.println("Access Token Expired........ Generaating New Token......");
-			gen_access();
-			list_items();
-		}
-		con.disconnect();
-	}
-
-	public static void gen_access() throws IOException, InterruptedException, ParseException
-	{
-		Contacts.gen_access_token();
-		g.setAccess(TokenConfig.prop.getProperty("access_token"));
+		JSONObject obj = ApiMethods.get(url,g);
+        System.out.println(obj);
+        JSONArray ja = (JSONArray)obj.get("items");
+        for(int i=0;i<ja.size();i++)
+        {
+        	JSONObject objects = (JSONObject)ja.get(i);
+        	String a = objects.toString();
+        	System.out.println(g.toPrettyFormat(a));
+        }
 	}
 
 	private static void get_item(long id) throws Exception {
 		// TODO Auto-generated method stub
-		String inputLine = g.getInputLine();
-		StringBuffer content = new StringBuffer();
 		URL url = new URL(base_url+"/items/"+id+"?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
-		con.setRequestProperty ("Authorization", inputLine);
-		int status = con.getResponseCode();
-		if(status==200)
-		{
-			BufferedReader in = new BufferedReader(
-					  new InputStreamReader(con.getInputStream()));
-			while ((inputLine = in.readLine()) != null) 
-			{
-				content.append(inputLine);
-			}
-			in.close();
-			String inp = content.toString();
-			JSONParser jsonParser = new JSONParser();
-		    JSONObject obj = (JSONObject)jsonParser.parse(inp);
-	        System.out.println(g.toPrettyFormat(obj.toString()));
-		}
-		else
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access();
-			get_item(id);
-		}
-		con.disconnect();
+		JSONObject obj = ApiMethods.get(url, g);
+        System.out.println(g.toPrettyFormat(obj.toString()));		
 	}
 
 	private static void delete_item(long id) throws Exception {
 		// TODO Auto-generated method stub
-		String inputLine = g.getInputLine();
 		URL url = new URL(base_url+"/items/"+id+"?organization_id="+organisation_id);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("DELETE");
-		con.setRequestProperty ("Authorization", inputLine);
-		int response = con.getResponseCode();
+		int response = ApiMethods.delete(url,g);
 		if(response==200)
 		{
 			System.out.println("Item Deleted Successfully........");
@@ -116,12 +46,6 @@ public class Items
 		else if(response==404)
 		{
 			System.out.println("Enter Correct Item Id....");
-		}
-		else if(response==401)
-		{
-			System.out.println("Access Token Expired........! Refreshing token......!");
-			gen_access();
-			delete_item(id);
 		}
 		else
 		{
@@ -132,7 +56,6 @@ public class Items
 	@SuppressWarnings("unchecked")
 	private static void create_item() throws Exception {
 		// TODO Auto-generated method stub
-		String inputLine = g.getInputLine();
 		System.out.print("Enter item name:");
 		String name = sc.nextLine();
 		System.out.print("Enter item rate:");
@@ -146,35 +69,10 @@ public class Items
 		HashMap<String, Object> requestBody = new HashMap<>();
 		requestBody.put("JSONString", jsonObject.toString());
 		URL url = new URL(base_url+"/items?organization_id="+organisation_id);
-		HttpURLConnection request = (HttpURLConnection) url.openConnection();
-		request.setRequestProperty("Authorization", inputLine);
-		request.setRequestProperty("Accept", "application/json");
-		request.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		request.setRequestMethod("POST");
-		request.setDoInput(true);
-		request.setDoOutput(true);
-		request.setRequestProperty("Accept-Charset", "UTF-8");	//No I18N
-		StringBuffer requestParams = new StringBuffer();
-		DataOutputStream dos = new DataOutputStream(request.getOutputStream());
-		Iterator<String> keyIterator = requestBody.keySet().iterator();
-		while(keyIterator.hasNext())
-		{
-			String key = keyIterator.next();
-			String value = (String)requestBody.get(key);
-			requestParams.append(URLEncoder.encode(key, "UTF-8"));
-			requestParams.append("=").append(URLEncoder.encode(value, "UTF-8"));
-			requestParams.append("&");
-		}
-		dos.writeBytes(requestParams.toString());	
-		dos.close();
-		int status = request.getResponseCode();
+		int status = ApiMethods.post(url,requestBody,g);
 		if(status==201)
 		{
 			System.out.println("Item Created Successfully....!");
-		}
-		else if(status==401)
-		{
-			System.out.println("Generate a new Access Token and try again........!");
 		}
 		else
 		{
@@ -192,7 +90,7 @@ public class Items
 			opt = Integer.parseInt(sc.nextLine());
 			switch(opt)
 			{
-				case 1:	gen_access();
+				case 1:	ApiMethods.gen_access_token(g);
 						break;
 				case 2: create_item();
 						break;
