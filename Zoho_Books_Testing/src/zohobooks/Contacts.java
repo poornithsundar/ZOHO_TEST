@@ -126,7 +126,7 @@ public class Contacts
 		ApiMethods.delete(url, g);
 	}
 	
-	public Contacts() throws Exception
+	public void helperContacts() throws Exception
 	{
 		int opt = 0;
 		do

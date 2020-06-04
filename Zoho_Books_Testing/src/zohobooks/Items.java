@@ -54,7 +54,7 @@ public class Items
 		ApiMethods.post(url,requestBody,g);
 	}
 	
-	public Items() throws Exception
+	public void helperItems() throws Exception
 	{
 		int opt = 0;
 		do
